@@ -35,7 +35,7 @@ export default function Home() {
       if (isGateDismissed) return;
 
       // Show marketing block overlay once they scroll down past 1200px
-      if (window.scrollY > 1200) {
+      if (window.scrollY > 1500) {
         setIsGateActive(true);
       } else {
         setIsGateActive(false);
@@ -732,7 +732,7 @@ export default function Home() {
       {/* Sticky Floating Bottom Mini-Card (shown after main gate is dismissed) */}
       <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-40 w-auto md:w-full md:max-w-sm bg-white/90 backdrop-blur-xl border border-stone-200/60 rounded-3xl shadow-xl p-4 flex items-center justify-between gap-4 mini-card-container ${isMiniCardActive ? "active" : ""}`}>
 
-        <div 
+        <div
           onClick={openGateFromMiniCard}
           className="flex items-center gap-3 cursor-pointer group/card hover:opacity-85 active:scale-98 transition-all flex-1"
           title="Click to expand full details"
@@ -773,15 +773,7 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>
-          <button
-            onClick={() => setIsMiniCardActive(false)}
-            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-stone-100 transition-colors text-stone-400 hover:text-stone-700 cursor-pointer"
-            title="Close"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+
         </div>
 
       </div>
