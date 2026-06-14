@@ -20,9 +20,7 @@ export default function Home() {
   });
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [isGateActive, setIsGateActive] = useState(false);
-  const [shouldRenderGate, setShouldRenderGate] = useState(false);
   const [isGateDismissed, setIsGateDismissed] = useState(false);
-  const [isMiniCardVisible, setIsMiniCardVisible] = useState(false);
   const [isMiniCardActive, setIsMiniCardActive] = useState(false);
 
   // Monitor scroll for sticky header blurring and content gating (paywall)
@@ -48,21 +46,6 @@ export default function Home() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isGateDismissed]);
-
-  // Handle gate mount/unmount animation timing
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    if (isGateActive) {
-      setShouldRenderGate(true);
-    } else if (shouldRenderGate) {
-      timeoutId = setTimeout(() => {
-        setShouldRenderGate(false);
-      }, 800); // matches transition duration of 0.8s
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isGateActive, shouldRenderGate]);
 
   // Intersection Observer for scroll reveal animations
   useEffect(() => {
@@ -101,11 +84,13 @@ export default function Home() {
   const closeGate = () => {
     setIsGateActive(false);
     setIsGateDismissed(true);
-    // Smoothly transition into bottom floating card
-    setIsMiniCardVisible(true);
-    setTimeout(() => {
-      setIsMiniCardActive(true);
-    }, 100);
+    setIsMiniCardActive(true);
+  };
+
+  const openGateFromMiniCard = () => {
+    setIsMiniCardActive(false);
+    setIsGateDismissed(false);
+    setIsGateActive(true);
   };
 
   const tabs = {
@@ -238,7 +223,7 @@ export default function Home() {
           </div>
 
           {/* Right Side: Content with White Theme */}
-          <div className="relative flex flex-col justify-center px-6 py-20 md:px-12 lg:px-20 xl:px-24 bg-white text-[#1d1d1f] h-full z-10">
+          <div className="relative flex flex-col justify-center px-6 py-10 md:px-12 lg:px-20 xl:px-24 bg-white text-[#1d1d1f] h-full z-10">
             {/* Top spacer to push content down slightly on mobile/tablet */}
             <div className="h-12 lg:hidden"></div>
 
@@ -667,141 +652,139 @@ export default function Home() {
       )}
 
       {/* Full Page Content Gate Overlay (Faded lock screen - Half Height content with fading top) */}
-      {shouldRenderGate && (
-        <div className={`fixed inset-0 z-50 flex flex-col justify-end bg-gradient-to-b from-transparent via-[#fbfbfd]/95 to-[#fbfbfd] gate-overlay ${isGateActive ? "active" : ""} pointer-events-auto`}>
-          
-          {/* Close button in top-right of screen */}
-          <button
-            onClick={closeGate}
-            className="absolute top-6 right-6 md:top-10 md:right-10 w-10 h-10 rounded-full border border-stone-200/80 bg-white/80 backdrop-blur-md flex items-center justify-center hover:bg-white hover:border-stone-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer text-[#1d1d1f] shadow-xs z-50"
-            aria-label="Close preview"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      <div className={`fixed inset-0 z-50 flex flex-col justify-end bg-gradient-to-b from-transparent via-[#fbfbfd]/95 to-[#fbfbfd] gate-overlay ${isGateActive ? "active" : ""} pointer-events-auto`}>
 
-          {/* Centered Pitch Card */}
-          <div className={`max-w-md w-full mx-auto mb-[8vh] px-6 text-center space-y-5 gate-card ${isGateActive ? "active" : ""}`}>
+        {/* Close button in top-right of screen */}
+        <button
+          onClick={closeGate}
+          className="absolute top-6 right-6 md:top-10 md:right-10 w-10 h-10 rounded-full border border-stone-200/80 bg-white/80 backdrop-blur-md flex items-center justify-center hover:bg-white hover:border-stone-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer text-[#1d1d1f] shadow-xs z-50"
+          aria-label="Close preview"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-            {/* Profile Avatar */}
-            <div className="relative w-16 h-16 rounded-full overflow-hidden mx-auto border-2 border-[#2d5a3e] shadow-md bg-stone-50">
-              <Image
-                src="/profile.jpeg"
-                alt="Deneth Kavindu - Professional Web Designer"
-                fill
-                placeholder="blur"
-                blurDataURL={rgbDataURL(220, 225, 220)}
-                className="object-cover"
-              />
-            </div>
+        {/* Centered Pitch Card */}
+        <div className={`max-w-md w-full mx-auto mb-[8vh] px-6 text-center space-y-5 gate-card ${isGateActive ? "active" : ""}`}>
 
-            {/* Typography */}
-            <div className="space-y-2.5">
-              <span className="text-[10px] font-semibold tracking-[0.25em] uppercase text-[#2d5a3e]">DEMO SITE PREVIEW</span>
-              <h3 className="font-sans text-3xl font-light text-[#1d1d1f] tracking-tight leading-tight">
-                Unlock the Full Web Experience
-              </h3>
-              <p className="text-xs font-light text-[#515154] leading-relaxed max-w-sm mx-auto">
-                This premium luxury resort interface was custom designed and developed by <strong className="font-normal text-[#1d1d1f]">Deneth Kavindu</strong>.
-              </p>
-              <p className="text-xs font-light text-[#515154] leading-relaxed max-w-sm mx-auto">
-                Contact me to build a professional, high-end web presence for your own brand.
-              </p>
-            </div>
-
-            {/* Dynamic Buttons */}
-            <div className="space-y-3.5 max-w-xs mx-auto pt-2">
-              <a
-                href="tel:0768250161"
-                className="flex items-center justify-center gap-2.5 w-full py-3 bg-[#2d5a3e] hover:bg-[#244832] text-white text-xs font-medium uppercase tracking-widest rounded-full transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
-              >
-                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <span>Call Deneth Kavindu: 076 825 0161</span>
-              </a>
-
-              <a
-                href="https://deneth.site"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 border border-stone-300 hover:border-stone-850 text-stone-600 hover:text-stone-900 text-xs font-medium uppercase tracking-widest rounded-full transition-all duration-300 bg-white/80 shadow-xs cursor-pointer"
-              >
-                <span>Explore deneth.site</span>
-                <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-
-              <button
-                onClick={closeGate}
-                className="text-xs font-light text-stone-400 hover:text-stone-700 underline underline-offset-4 transition-colors cursor-pointer pt-2 block mx-auto"
-              >
-                Skip and continue reading
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-      {/* Sticky Floating Bottom Mini-Card (shown after main gate is dismissed) */}
-      {isMiniCardVisible && (
-        <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-40 w-auto md:w-full md:max-w-sm bg-white/90 backdrop-blur-xl border border-stone-200/60 rounded-3xl shadow-xl p-4 flex items-center justify-between gap-4 transition-all duration-700 ease-out ${isMiniCardActive ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-95"}`}>
-          
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#2d5a3e]/30 bg-stone-50 flex-shrink-0">
-              <Image
-                src="/profile.jpeg"
-                alt="Deneth Kavindu"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-semibold tracking-wider text-[#2d5a3e] uppercase">PREVIEW DESIGNER</p>
-              <h4 className="text-xs font-medium text-[#1d1d1f]">Deneth Kavindu</h4>
-              <p className="text-[9px] text-[#515154] font-light">Custom High-End Web Development</p>
-            </div>
+          {/* Profile Avatar */}
+          <div className="relative w-16 h-16 rounded-full overflow-hidden mx-auto border-2 border-[#2d5a3e] shadow-md bg-stone-50">
+            <Image
+              src="/profile.jpeg"
+              alt="Deneth Kavindu - Professional Web Designer"
+              fill
+              placeholder="blur"
+              blurDataURL={rgbDataURL(220, 225, 220)}
+              className="object-cover"
+            />
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Typography */}
+          <div className="space-y-2.5">
+            <span className="text-[10px] font-semibold tracking-[0.25em] uppercase text-[#2d5a3e]">DEMO SITE PREVIEW</span>
+            <h3 className="font-sans text-3xl font-light text-[#1d1d1f] tracking-tight leading-tight">
+              Unlock the Full Web Experience
+            </h3>
+            <p className="text-xs font-light text-[#515154] leading-relaxed max-w-sm mx-auto">
+              This premium luxury resort interface was custom designed and developed by <strong className="font-normal text-[#1d1d1f]">Deneth Kavindu</strong>.
+            </p>
+            <p className="text-xs font-light text-[#515154] leading-relaxed max-w-sm mx-auto">
+              Contact me to build a professional, high-end web presence for your own brand.
+            </p>
+          </div>
+
+          {/* Dynamic Buttons */}
+          <div className="space-y-3.5 max-w-xs mx-auto pt-2">
             <a
               href="tel:0768250161"
-              className="w-8 h-8 rounded-full bg-[#2d5a3e] hover:bg-[#244832] flex items-center justify-center text-white transition-all active:scale-90 shadow-xs cursor-pointer"
-              title="Call Deneth"
+              className="flex items-center justify-center gap-2.5 w-full py-3 bg-[#2d5a3e] hover:bg-[#244832] text-white text-xs font-medium uppercase tracking-widest rounded-full transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
+              <span>Call Deneth Kavindu: 076 825 0161</span>
             </a>
+
             <a
               href="https://deneth.site"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full border border-stone-200 hover:border-stone-500 bg-white flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all active:scale-90 shadow-2xs cursor-pointer"
-              title="Visit Website"
+              className="flex items-center justify-center gap-2 w-full py-3 border border-stone-300 hover:border-stone-850 text-stone-600 hover:text-stone-900 text-xs font-medium uppercase tracking-widest rounded-full transition-all duration-300 bg-white/80 shadow-xs cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <span>Explore deneth.site</span>
+              <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
+
             <button
-              onClick={() => {
-                setIsMiniCardActive(false);
-                setTimeout(() => setIsMiniCardVisible(false), 700);
-              }}
-              className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-stone-100 transition-colors text-stone-400 hover:text-stone-700 cursor-pointer"
-              title="Close"
+              onClick={closeGate}
+              className="text-xs font-light text-stone-400 hover:text-stone-700 underline underline-offset-4 transition-colors cursor-pointer pt-2 block mx-auto"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              Skip and continue reading
             </button>
           </div>
 
         </div>
-      )}
+      </div>
+
+      {/* Sticky Floating Bottom Mini-Card (shown after main gate is dismissed) */}
+      <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-40 w-auto md:w-full md:max-w-sm bg-white/90 backdrop-blur-xl border border-stone-200/60 rounded-3xl shadow-xl p-4 flex items-center justify-between gap-4 mini-card-container ${isMiniCardActive ? "active" : ""}`}>
+
+        <div 
+          onClick={openGateFromMiniCard}
+          className="flex items-center gap-3 cursor-pointer group/card hover:opacity-85 active:scale-98 transition-all flex-1"
+          title="Click to expand full details"
+        >
+          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#2d5a3e]/30 bg-stone-50 flex-shrink-0 transition-transform duration-300 group-hover/card:scale-105">
+            <Image
+              src="/profile.jpeg"
+              alt="Deneth Kavindu"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-[10px] font-semibold tracking-wider text-[#2d5a3e] uppercase">PREVIEW DESIGNER</p>
+            <h4 className="text-xs font-medium text-[#1d1d1f] transition-colors duration-300 group-hover/card:text-[#2d5a3e]">Deneth Kavindu</h4>
+            <p className="text-[9px] text-[#515154] font-light">Custom High-End Web Development</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <a
+            href="tel:0768250161"
+            className="w-8 h-8 rounded-full bg-[#2d5a3e] hover:bg-[#244832] flex items-center justify-center text-white transition-all active:scale-90 shadow-xs cursor-pointer"
+            title="Call Deneth"
+          >
+            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </a>
+          <a
+            href="https://deneth.site"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 rounded-full border border-stone-200 hover:border-stone-500 bg-white flex items-center justify-center text-stone-600 hover:text-stone-900 transition-all active:scale-90 shadow-2xs cursor-pointer"
+            title="Visit Website"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+          <button
+            onClick={() => setIsMiniCardActive(false)}
+            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-stone-100 transition-colors text-stone-400 hover:text-stone-700 cursor-pointer"
+            title="Close"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
 
     </div>
   );
